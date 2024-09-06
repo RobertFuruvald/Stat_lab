@@ -1,10 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 # probability functions for each dice
 def p_dice(n):
-    return np.ones(n)/n
+    return np.ones(n) / n
 
+
+# Create the different dices
 tetra_pf = p_dice(4)
 cube_pf = p_dice(6)
 octa_pf = p_dice(8)
@@ -12,65 +15,79 @@ dodeca_pf = p_dice(12)
 icosa_pf = p_dice(20)
 
 # Task 1: Probability function of S
-S = np.convolve(tetra_pf,cube_pf)
-S = np.convolve(S,octa_pf)
-S = np.convolve(S,dodeca_pf)
-S = np.convolve(S,icosa_pf)
+S = np.convolve(tetra_pf, cube_pf)
+S = np.convolve(S, octa_pf)
+S = np.convolve(S, dodeca_pf)
+S = np.convolve(S, icosa_pf)
 
-
-#Task 2: Probability of winning the game: S<=10 || S>=45
-P_winning = sum(S[0:5]) + sum(S[40:])
+# Task 2: Probability of winning the game: S<=10 || S>=45
+P_winning = sum(S[0:6]) + sum(S[40:])
 print("Probability of winning: ", P_winning)
 
-
 # Monte-Carlo
-trials = [pow(10,i) for i in range(1,6)]
+trials = [pow(10, i) for i in range(1, 6)]
+
 
 def rand_dice(n):
-    return np.random.randint(1,n+1)
+    return np.random.randint(1, n + 1)
 
 
 def monte(trial):
     win = 0
     for _ in range(trial):
         X = rand_dice(4) + rand_dice(6) + rand_dice(8) + rand_dice(12) + rand_dice(20)
-        if X<=10 or X>=45:
+        if X <= 10 or X >= 45:
             win = win + 1
 
-    return win/trial
+    return win / trial
 
 
+# task 3 1000 trials with the monte method
+print("Task 3 1000 trials with the monte method: ", monte(1000))
 
-# task 4
+# task 4 run different number of trials
+task_4 = []
 for trial in trials:
-    print(f'{trial} trials: ', monte(trial))
+    task_4.append(monte(trial))
+
 
 # task 5
-not_winning = True
-t = 2
-i = 5
-while not_winning:
-    i = i+1
-    tries = pow(t,i)
-    print("tries: ", tries)
-    prob = monte(tries)
-    relative = abs(prob - P_winning)/P_winning
-    #if P_winning*0.9 <= prob <= P_winning*1.1:
-    if relative < 0.1:
-             # p = prob
-    #         # for _ in range(50):
-    #         #     prob = monte(tries)
-    #         #     p = p + prob
-    #         # print("p/11: ", p/51)
-    #         # if P_winning*0.9 < p/51 < P_winning*1.1:
-        not_winning = False
 
-    print("prob: ", prob)
-    number_of_trials_needed = pow(t,i)
-    print("Trials needed: ", number_of_trials_needed)
+# Function to simulate the Monte Carlo relative error
+def monte_trials(n, max_trials=100000):
+    end_result = []
+    n_trials = []
+    while n < max_trials:
+        sim_prob = monte(n)
+        relative_error = abs(sim_prob - P_winning) / P_winning
+        end_result.append(relative_error)
+        n_trials.append(n)
+        n += 1000
+    # Returns the number of trials
+    return n_trials, end_result
 
 
-#Plots
+task_5 = monte_trials(1000)
+
+
+# Method to simulate the Monte Carlo iteration to obtain the median of the trials times iterations
+def monte_trials_median(n, iterations=100, max_trials=100000):
+    end_result = []
+    n_trials = []
+    while n < max_trials:
+        result = []
+        for _ in range(iterations):
+            sim_prob = monte(n)
+            relative_error = abs(sim_prob - P_winning) / P_winning
+            result.append(relative_error)
+        end_result.append(sum(result) / iterations)
+        n_trials.append(n)
+        n += 1000
+
+    return n_trials, end_result
+
+
+# Plots for the tasks
 # The sum S ranges from 5 to 50
 possible_sums = np.arange(5, 51)
 # data prep
@@ -87,5 +104,36 @@ table = ax.table(cellText=table_data, colLabels=["S", "P(S=s)"], cellLoc='center
 table.auto_set_font_size(False)
 table.set_fontsize(10)
 
-# Display the table
+# Create a bar chart
+fig, ax = plt.subplots(figsize=(8, 8))
+ax.bar(possible_sums, S, color='skyblue', edgecolor='black')
+
+# Add labels and title
+ax.set_xlabel('Sum (S)')
+ax.set_ylabel('Probability P(S=s)')
+ax.set_title('Probability Distribution of S (Sum of Five Platonic Dice)')
+
+# Task 4 figure
+fig, ax = plt.subplots(figsize=(8, 8))
+ax.plot(trials, task_4, marker='o', linestyle='-', color='blue', label='Probability')
+ax.axhline(y=P_winning, color='red', linestyle='--', label='Exact Probability')
+
+# Label
+ax.set_xlabel('Number of Trials')
+ax.set_ylabel('Estimated Probability')
+ax.set_title('Estimated Probability for n trials')
+# Set the x-axis to logarithmic scale for better visualization
+ax.set_xscale('log')
+fig.legend()
+# Task 5 figure
+plt.figure(figsize=(8, 8))
+plt.plot(task_5[0], task_5[1], label="Relative error")
+
+plt.axhline(0.10, color="red", linestyle="--", label="10% Error Threshold")
+plt.xlabel("Number of Trials")
+plt.ylabel("Relative Error")
+plt.title("Convergence of Relative Error")
+plt.legend()
+
+# Display the figures
 plt.show()
