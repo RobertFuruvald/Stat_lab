@@ -70,23 +70,6 @@ def monte_trials(n, max_trials=100000):
 task_5 = monte_trials(1000)
 
 
-# Method to simulate the Monte Carlo iteration to obtain the median of the trials times iterations
-def monte_trials_median(n, iterations=100, max_trials=100000):
-    end_result = []
-    n_trials = []
-    while n < max_trials:
-        result = []
-        for _ in range(iterations):
-            sim_prob = monte(n)
-            relative_error = abs(sim_prob - P_winning) / P_winning
-            result.append(relative_error)
-        end_result.append(sum(result) / iterations)
-        n_trials.append(n)
-        n += 1000
-
-    return n_trials, end_result
-
-
 # Plots for the tasks
 # The sum S ranges from 5 to 50
 possible_sums = np.arange(5, 51)
