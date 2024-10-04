@@ -28,7 +28,7 @@ centered_means = bootstrap_means[(bootstrap_calculated > a) & (bootstrap_calcula
 # Get the number of μ that fits within a,b
 within_bounds = len(centered_means)
 # Calculate the reasonable μ from the filtered means
-reasonable_mu = np.mean(centered_means)
+reasonable_mu = np.mean(bootstrap_means)
 
 # estimate the probability
 p = within_bounds / m
